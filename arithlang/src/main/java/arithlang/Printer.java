@@ -22,7 +22,14 @@ public class Printer {
             for(AST.Exp exp : e.all()) 
                 result += " " + exp.accept(this);
             return result + ")";
-        }		
+        }
+
+        public String visit(ModExp e) {
+            String result = "(%";
+            for(AST.Exp exp : e.all())
+                result += " " + exp.accept(this);
+            return result + ")";
+        }
 		
         public String visit(SubExp e) {
             String result = "(-";

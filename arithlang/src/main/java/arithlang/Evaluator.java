@@ -61,6 +61,21 @@ public class Evaluator implements Visitor<Value> {
     }
 
     @Override
+    public Value visit(ModExp e) {
+        List<Exp> operands = e.all();
+        NumVal lVal = (NumVal) operands.get(0).accept(this);
+        double result = lVal.v();
+        for(int i=1; i<operands.size(); i++) {
+            NumVal rVal = (NumVal) operands.get(i).accept(this);
+            result = result % rVal.v();
+        }
+        if (Double.isNaN(result)) {
+            throw new NullPointerException("rValue cannot be negative number");
+        }
+        return new NumVal(result);
+    }
+
+    @Override
     public Value visit(SubExp e) {
         List<Exp> operands = e.all();
         NumVal lVal = (NumVal) operands.get(0).accept(this);
