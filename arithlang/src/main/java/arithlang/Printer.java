@@ -37,12 +37,5 @@ public class Printer {
                 result += " " + exp.accept(this);
             return result + ")";
         }
-
-        public String visit(DivExp e) {
-            String result = "(/";
-            for(AST.Exp exp : e.all()) 
-                result += " " + exp.accept(this);
-            return result + ")";
-        }
     }
 }

@@ -11,15 +11,11 @@ grammar ArithLang;
         | a=addexp { $ast = $a.ast; }
         | s=subexp { $ast = $s.ast; }
         | m=multexp { $ast = $m.ast; }
-        | d=divexp { $ast = $d.ast; }
         ;
-  
+
  numexp returns [NumExp ast]:
- 		n0=Number { $ast = new NumExp(Integer.parseInt($n0.text)); } 
-  		| '-' n0=Number { $ast = new NumExp(-Integer.parseInt($n0.text)); }
-  		| n0=Number Dot n1=Number { $ast = new NumExp(Double.parseDouble($n0.text+"."+$n1.text)); }
-  		| '-' n0=Number Dot n1=Number { $ast = new NumExp(Double.parseDouble("-" + $n0.text+"."+$n1.text)); }
-  		;		
+ 		n0=String { $ast = new NumExp($n0.text); }
+  		;
   
  addexp returns [AddExp ast]
         locals [ArrayList<Exp> list]
@@ -34,7 +30,7 @@ grammar ArithLang;
         locals [ArrayList<Exp> list]
  		@init { $list = new ArrayList<Exp>(); } :
  		'(' '-'
- 		    e=exp { $list.add($e.ast); } 
+ 		    e=exp { $list.add($e.ast); }
  		    ( e=exp { $list.add($e.ast); } )+ 
  		')' { $ast = new SubExp($list); }
  		;
@@ -48,15 +44,6 @@ grammar ArithLang;
  		')' { $ast = new MultExp($list); }
  		;
  
- divexp returns [DivExp ast] 
-        locals [ArrayList<Exp> list]
- 		@init { $list = new ArrayList<Exp>(); } :
- 		'(' '/'
- 		    e=exp { $list.add($e.ast); } 
- 		    ( e=exp { $list.add($e.ast); } )+ 
- 		')' { $ast = new DivExp($list); }
- 		;
-
 
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
@@ -64,6 +51,7 @@ grammar ArithLang;
  Define : 'define' ;
  Let : 'let' ;
  Dot : '.' ;
+ String : [0pnu];
 
  Number : DIGIT+ ;
 

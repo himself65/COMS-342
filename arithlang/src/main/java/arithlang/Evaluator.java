@@ -5,7 +5,7 @@ import static arithlang.Value.*;
 import java.util.List;
 
 public class Evaluator implements Visitor<Value> {
-    private NumVal record = new NumVal(0);
+    private NumVal record = new NumVal("0");
     Printer.Formatter ts = new Printer.Formatter();
 	
     Value valueOf(Program p) {
@@ -16,12 +16,32 @@ public class Evaluator implements Visitor<Value> {
     @Override
     public Value visit(AddExp e) {
         List<Exp> operands = e.all();
-        double result = 0;
-        for(Exp exp: operands) {
-            NumVal intermediate = (NumVal) exp.accept(this); // Dynamic type-checking
-            result += intermediate.v(); //Semantics of AddExp in terms of the target language.
+        String result = "";
+        if (operands.size() != 2) {
+            throw new NullPointerException("each operator only can take two operands");
         }
-        return new NumVal(result);
+        NumVal exp0 = (NumVal) operands.get(0).accept(this);
+        NumVal exp1 = (NumVal) operands.get(1).accept(this);
+        String x = exp0.v();
+        String y = exp1.v();
+        switch (x) {
+            case "0":
+                return new NumVal(y);
+            case "p":
+                if (y.equals("0") || y.equals("p")) {
+                    return new NumVal("p");
+                } else {
+                    return new NumVal("u");
+                }
+            case "n":
+                if (y.equals("0") || y.equals("n")) {
+                    return new NumVal("n");
+                } else {
+                    return new NumVal("u");
+                }
+            default:
+                return new NumVal("u");
+        }
     }
 
     @Override
@@ -30,29 +50,32 @@ public class Evaluator implements Visitor<Value> {
     }
 
     @Override
-    public Value visit(DivExp e) {
-        List<Exp> operands = e.all();
-        NumVal lVal = (NumVal) operands.get(0).accept(this);
-        double result = lVal.v(); 
-        for(int i=1; i<operands.size(); i++) {
-            NumVal rVal = (NumVal) operands.get(i).accept(this);
-            if (rVal.v() == 0) {
-                return new DynamicError(ts.visit(e));
-            }
-            result = result / rVal.v();
-        }
-        return new NumVal(result);
-    }
-
-    @Override
     public Value visit(MultExp e) {
         List<Exp> operands = e.all();
-        double result = 1;
-        for(Exp exp: operands) {
-            NumVal intermediate = (NumVal) exp.accept(this); // Dynamic type-checking
-            result *= intermediate.v(); //Semantics of MultExp.
+        NumVal exp0 = (NumVal) operands.get(0).accept(this);
+        NumVal exp1 = (NumVal) operands.get(1).accept(this);
+        String x = exp0.v();
+        String y = exp1.v();
+        switch (x) {
+            case "0":
+                return new NumVal("0");
+            case "p":
+                return new NumVal(y);
+            case "n":
+                if (y.equals("0") || y.equals("u")) {
+                    return new NumVal(y);
+                } else if (y.equals("p")){
+                    return new NumVal("n");
+                } else {
+                    return new NumVal("p");
+                }
+            default:
+                if (y.equals("0")) {
+                    return new NumVal("0");
+                } else {
+                    return new NumVal("u");
+                }
         }
-        return new NumVal(result);
     }
 
     @Override
@@ -63,12 +86,27 @@ public class Evaluator implements Visitor<Value> {
     @Override
     public Value visit(SubExp e) {
         List<Exp> operands = e.all();
-        NumVal lVal = (NumVal) operands.get(0).accept(this);
-        double result = lVal.v();
-        for(int i=1; i<operands.size(); i++) {
-            NumVal rVal = (NumVal) operands.get(i).accept(this);
-            result = result - rVal.v();
+        NumVal exp0 = (NumVal) operands.get(0).accept(this);
+        NumVal exp1 = (NumVal) operands.get(1).accept(this);
+        String x = exp0.v();
+        String y = exp1.v();
+        switch (x) {
+            case "0":
+                return new NumVal(y);
+            case "p":
+                if (y.equals("0") || y.equals("n")) {
+                    return new NumVal("n");
+                } else {
+                    return new NumVal("u");
+                }
+            case "n":
+                if (y.equals("0") || y.equals("p")) {
+                    return new NumVal("p");
+                } else {
+                    return new NumVal("u");
+                }
+            default:
+                return new NumVal("u");
         }
-        return new NumVal(result);
     }
 }
