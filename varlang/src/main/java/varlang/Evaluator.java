@@ -2,6 +2,7 @@ package varlang;
 import static varlang.AST.*;
 import static varlang.Value.*;
 
+import java.util.Formatter;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -49,7 +50,7 @@ public class Evaluator implements Visitor<Value> {
 	public Value visit(DivExp e, Env env) {
 		List<Exp> operands = e.all();
 		NumVal lVal = (NumVal) operands.get(0).accept(this, env);
-		double result = lVal.v(); 
+		double result = lVal.v();
 		for(int i=1; i<operands.size(); i++) {
 			NumVal rVal = (NumVal) operands.get(i).accept(this, env);
 			result = result / rVal.v();
@@ -99,6 +100,18 @@ public class Evaluator implements Visitor<Value> {
 
 	@Override
 	public Value visit(LetExp e, Env env) { // New for varlang.
+		if (env.isHole()) {
+			for (String name: e.names()) {
+				try {
+					env.get(name);
+				} catch (Env.LookupException lookupException) {
+					continue;
+				}
+				Printer.Formatter formatter = new Printer.Formatter();
+				String exp = formatter.visit(e, env);
+				return new DynamicError("Error: Creating a hole in the scope for variable " + e.names().get(0) + " in " + exp);
+			}
+		}
 		List<String> names = e.names();
 		List<Exp> value_exps = e.value_exps();
 		List<Value> values = new ArrayList<Value>(value_exps.size());
@@ -107,9 +120,10 @@ public class Evaluator implements Visitor<Value> {
 			values.add((Value)exp.accept(this, env));
 
 		Env new_env = env;
-		for (int i = 0; i < names.size(); i++)
+		for (int i = 0; i < names.size(); i++) {
 			new_env = new ExtendEnv(new_env, names.get(i), values.get(i));
-
+		}
+		new_env.setIsHole(true);
 		return (Value) e.body().accept(this, new_env);
 	}
 	@Override
