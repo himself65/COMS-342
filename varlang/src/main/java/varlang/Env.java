@@ -1,5 +1,7 @@
 package varlang;
 
+import java.util.Objects;
+
 /**
  * Representation of an environment, which maps variables to values.
  * 
@@ -48,6 +50,9 @@ public interface Env {
 		private java.util.Hashtable<String, Value> map;
 		public GlobalEnv(){
 			map = new java.util.Hashtable<String, Value>();
+			this.map.put("course", new Value.NumVal(342));
+			this.map.put("gravity", new Value.NumVal(9.80665));
+			this.map.put("moon", new Value.NumVal(0.16));
 		}
 		public synchronized Value get (String search_var) {
 			if(map.containsKey(search_var))

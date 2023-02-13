@@ -4,6 +4,7 @@ import static varlang.Value.*;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import varlang.AST.AddExp;
 import varlang.AST.NumExp;
@@ -49,7 +50,7 @@ public class Evaluator implements Visitor<Value> {
 	public Value visit(DivExp e, Env env) {
 		List<Exp> operands = e.all();
 		NumVal lVal = (NumVal) operands.get(0).accept(this, env);
-		double result = lVal.v(); 
+		double result = lVal.v();
 		for(int i=1; i<operands.size(); i++) {
 			NumVal rVal = (NumVal) operands.get(i).accept(this, env);
 			result = result / rVal.v();
@@ -71,8 +72,12 @@ public class Evaluator implements Visitor<Value> {
 	@Override
 	public Value visit(Program p, Env env) {
 		try {
-			for(DefineDecl d: p.decls())
-				d.accept(this, initEnv);
+			for(DefineDecl d: p.decls()) {
+				Object a = d.accept(this, initEnv);
+				if (a instanceof DynamicError) {
+					return (DynamicError) a;
+				}
+			}
 			return (Value) p.e().accept(this, initEnv);
 		} catch (ClassCastException e) {
 			return new DynamicError(e.getMessage());
@@ -102,6 +107,13 @@ public class Evaluator implements Visitor<Value> {
 		List<String> names = e.names();
 		List<Exp> value_exps = e.value_exps();
 		List<Value> values = new ArrayList<Value>(value_exps.size());
+        for (String name: names) {
+            if (Objects.equals(name, "moon") ||
+                    Objects.equals(name, "gravity") ||
+                    Objects.equals(name, "course")) {
+                return new DynamicError("Error: Redefining predefined global constants");
+            }
+        }
 
 		for(Exp exp : value_exps)
 			values.add((Value)exp.accept(this, env));
@@ -115,6 +127,11 @@ public class Evaluator implements Visitor<Value> {
 	@Override
 	public Value visit(DefineDecl e, Env env) { // New for definelang.
 		String name = e.name();
+		if (Objects.equals(name, "moon") ||
+				Objects.equals(name, "gravity") ||
+				Objects.equals(name, "course")) {
+			return new DynamicError("Error: Redefining predefined global constants");
+		}
 		Exp value_exp = e.value_exp();
 		Value value = (Value) value_exp.accept(this, env);
 		((GlobalEnv) initEnv).extend(name, value);
