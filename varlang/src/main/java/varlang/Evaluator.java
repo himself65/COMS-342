@@ -28,11 +28,17 @@ public class Evaluator implements Visitor<Value> {
 	public Value visit(AddExp e, Env env) {
 		List<Exp> operands = e.all();
 		double result = 0;
+		boolean en = false;
 		for(Exp exp: operands) {
 			NumVal intermediate = (NumVal) exp.accept(this, env); // Dynamic type-checking
+			if (intermediate.isEncrypted()) {
+				en = true;
+			}
 			result += intermediate.v(); //Semantics of AddExp in terms of the target language.
 		}
-		return new NumVal(result);
+		NumVal val = new NumVal(result);
+		val.setEncrypted(en);
+		return val;
 	}
 
 	@Override
@@ -93,8 +99,11 @@ public class Evaluator implements Visitor<Value> {
 
 	@Override
 	public Value visit(VarExp e, Env env) {
-		// Previously, all variables had value 42. New semantics.
-		return env.get(e.name());
+		try {
+			return env.getEncryptedValue(e.name());
+		} catch (Env.LookupException err) {
+			return env.get(e.name());
+		}
 	}
 
 	@Override
@@ -129,20 +138,29 @@ public class Evaluator implements Visitor<Value> {
 			if (!(name_exp instanceof AST.IdExp)) {
 				return new DynamicError("Error: Expected Identifier");
 			}
-			Object name = name_exp.accept(this, env);
+			String name = ((IdExp) name_exp)._name;
 			Exp value_exp = e._value_exps.get(i);
 			Exp encrypted_exp = e._encrypted_value_exps.get(i);
-			if (!(value_exp instanceof AST.NumExp)) {
+			if (!(value_exp instanceof AST.NumExp) || !(encrypted_exp instanceof AST.NumExp)) {
 				return new DynamicError("Error: Expected Number");
 			} else {
 				Value value = (Value) value_exp.accept(this, env);
 				result = result + ((NumVal) value).v();
-				env.setEncryptedValue(name.toString(), value);
+				env.setEncryptedValue(name, value);
 			}
 			Value value = (Value) encrypted_exp.accept(this, env);
 			result = result + ((NumVal) value).v();
 		}
-		return new NumVal(result);
+		// fixme: `(lete ((x 1 20)) (dec 10 x))` has incorrect result now
+		Value res = (Value) e.body().accept(this, env);
+		if (res instanceof DynamicError) {
+			return res;
+		}
+		if (res.isEncrypted()) {
+			return res;
+		} else {
+			return new NumVal(result);
+		}
 	}
 
 	@Override
@@ -152,7 +170,19 @@ public class Evaluator implements Visitor<Value> {
 
 	@Override
 	public Value visit(DecExp e, Env env) {
-		return null;
+		List<Exp> list = e.all();
+		if (list.size() != 2) {
+			return new DynamicError("Only accept 2 operands");
+		}
+		if (!(list.get(0) instanceof AST.NumExp)) {
+			return new DynamicError("Error: Expected Number");
+		}
+		if (!(list.get(1) instanceof AST.VarExp)) {
+			return new DynamicError("Error: Expected Inf");
+		}
+		Value value = env.getEncryptedValue(((AST.VarExp)list.get(1)).name());
+		value.setEncrypted(true);
+		return value;
 	}
 
 	private Env initialEnv() {

@@ -86,8 +86,8 @@ public interface Env {
 
 		@Override
 		public Value getEncryptedValue(String name) {
-			if(map.containsKey(name))
-				return map.get(name);
+			if(this.encryptedMap.containsKey(name))
+				return this.encryptedMap.get(name);
 			throw new LookupException("No binding found for name: " + name);
 		}
 
