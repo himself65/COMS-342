@@ -120,6 +120,41 @@ public class Evaluator implements Visitor<Value> {
 		((GlobalEnv) initEnv).extend(name, value);
 		return new Value.UnitVal();
 	}
+
+	@Override
+	public Value visit(LeteExp e, Env env) {
+		double result = 0;
+		for (int i = 0; i < e.names().size(); i++) {
+			Exp name_exp = e.names().get(i);
+			if (!(name_exp instanceof AST.IdExp)) {
+				return new DynamicError("Error: Expected Identifier");
+			}
+			Object name = name_exp.accept(this, env);
+			Exp value_exp = e._value_exps.get(i);
+			Exp encrypted_exp = e._encrypted_value_exps.get(i);
+			if (!(value_exp instanceof AST.NumExp)) {
+				return new DynamicError("Error: Expected Number");
+			} else {
+				Value value = (Value) value_exp.accept(this, env);
+				result = result + ((NumVal) value).v();
+				env.setEncryptedValue(name.toString(), value);
+			}
+			Value value = (Value) encrypted_exp.accept(this, env);
+			result = result + ((NumVal) value).v();
+		}
+		return new NumVal(result);
+	}
+
+	@Override
+	public Value visit(IdExp e, Env env) {
+		return null;
+	}
+
+	@Override
+	public Value visit(DecExp e, Env env) {
+		return null;
+	}
+
 	private Env initialEnv() {
 		GlobalEnv initEnv = new GlobalEnv();
 		return initEnv;

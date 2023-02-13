@@ -63,6 +63,7 @@ grammar ArithLang;
  
  Define : 'define' ;
  Let : 'let' ;
+ Lete : 'lete' ;
  Letrec : 'letrec' ;
  Lambda : 'lambda' ;
  If : 'if' ; 

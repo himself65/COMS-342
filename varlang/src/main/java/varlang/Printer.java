@@ -81,6 +81,21 @@ public class Printer {
 			return result + ")";
 		}
 
+		@Override
+		public String visit(AST.LeteExp e, Env env) {
+			return null;
+		}
+
+		@Override
+		public String visit(AST.DecExp e, Env env) {
+			return null;
+		}
+
+		@Override
+		public String visit(AST.IdExp e, Env env) {
+			return null;
+		}
+
 		public String visit(AST.ModExp e, Env env) {
 			String result = "(%";
 			for(AST.Exp exp : e.all())

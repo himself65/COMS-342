@@ -285,6 +285,50 @@ public interface AST {
 		public Exp value_exp() { return _value_exp; }
 
 	}
+
+	public static class IdExp extends Exp {
+		String _name;
+		public IdExp(String name) {
+			_name = name;
+		}
+
+		@Override
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
+		}
+	}
+
+	public static class LeteExp extends Exp {
+		List<Exp> _names;
+		List<Exp> _value_exps;
+		List<Exp> _encrypted_value_exps;
+		Exp _body;
+
+		public LeteExp(List<Exp> names, List<Exp> value_exps, List<Exp> encrypted_value_exps, Exp body) {
+			_names = names;
+			_value_exps = value_exps;
+			_body = body;
+			_encrypted_value_exps = encrypted_value_exps;
+		}
+
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
+		}
+
+		public List<Exp> names() { return _names; }
+
+		public List<Exp> value_exps() { return _value_exps; }
+
+		public Exp body() { return _body; }
+	}
+	public static class DecExp extends CompoundArithExp {
+		public DecExp(List<Exp> args) {
+			super(args);
+		}
+		public Object accept(Visitor visitor, Env env) {
+			return visitor.visit(this, env);
+		}
+	}
 	
 	public interface Visitor <T> {
 		// This interface should contain a signature for each concrete AST node.
@@ -299,5 +343,8 @@ public interface AST {
 		public T visit(AST.VarExp e, Env env);
 		public T visit(AST.LetExp e, Env env); // New for the varlang
 		public T visit(AST.DefineDecl d, Env env); // New for the definelang
+		public T visit(AST.LeteExp e, Env env);
+		public T visit(AST.DecExp e, Env env);
+		public T visit(AST.IdExp e, Env env);
 	}	
 }
