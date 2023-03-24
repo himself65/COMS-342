@@ -1,14 +1,15 @@
 package funclang;
 
-import static funclang.AST.*;
-import static funclang.Value.*;
+import funclang.Env.ExtendEnv;
+import funclang.Env.GlobalEnv;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import funclang.Env.*;
+import static funclang.AST.*;
+import static funclang.Value.*;
 
 public class Evaluator implements Visitor<Value> {
 
@@ -29,6 +30,28 @@ public class Evaluator implements Visitor<Value> {
       result += intermediate.v(); // Semantics of AddExp in terms of the target language.
     }
     return new NumVal(result);
+  }
+
+  @Override
+  public Value visit(ConjExp e, Env env) {
+    List<Exp> operands = e.all();
+    boolean result = true;
+    for (Exp exp : operands) {
+      BoolVal intermediate = (BoolVal) exp.accept(this, env); // Dynamic type-checking
+      result = result && intermediate.v(); // Semantics of ConjExp in terms of the target language.
+    }
+    return new BoolVal(result);
+  }
+
+  @Override
+  public Value visit(DisjExp e, Env env) {
+    List<Exp> operands = e.all();
+    boolean result = false;
+    for (Exp exp : operands) {
+      BoolVal intermediate = (BoolVal) exp.accept(this, env); // Dynamic type-checking
+      result = result || intermediate.v(); // Semantics of DisjExp in terms of the target language.
+    }
+    return new BoolVal(result);
   }
 
   @Override
@@ -125,7 +148,7 @@ public class Evaluator implements Visitor<Value> {
     Exp value_exp = e.value_exp();
     Value value = (Value) value_exp.accept(this, env);
     ((GlobalEnv) initEnv).extend(name, value);
-    return new Value.UnitVal();
+    return new UnitVal();
   }
 
   @Override
@@ -134,15 +157,15 @@ public class Evaluator implements Visitor<Value> {
     // 1. formal parameters of the function - e.formals()
     // 2. actual body of the function - e.body()
     // 3. mapping from the free variables in the function body to their values.
-    return new Value.FunVal(env, e.formals(), e.body());
+    return new FunVal(env, e.formals(), e.body());
   }
 
   @Override
   public Value visit(CallExp e, Env env) { // New for funclang.
     Object result = e.operator().accept(this, env);
-    if (!(result instanceof Value.FunVal))
-      return new Value.DynamicError("Operator not a function in call " + ts.visit(e, env));
-    Value.FunVal operator = (Value.FunVal) result; // Dynamic checking
+    if (!(result instanceof FunVal))
+      return new DynamicError("Operator not a function in call " + ts.visit(e, env));
+    FunVal operator = (FunVal) result; // Dynamic checking
     List<Exp> operands = e.operands();
 
     // Call-by-value semantics
@@ -152,7 +175,7 @@ public class Evaluator implements Visitor<Value> {
 
     List<String> formals = operator.formals();
     if (formals.size() != actuals.size())
-      return new Value.DynamicError("Argument mismatch in call " + ts.visit(e, env));
+      return new DynamicError("Argument mismatch in call " + ts.visit(e, env));
 
     Env fun_env = operator.env();
     for (int index = 0; index < formals.size(); index++)
@@ -164,9 +187,9 @@ public class Evaluator implements Visitor<Value> {
   @Override
   public Value visit(IfExp e, Env env) { // New for funclang.
     Object result = e.conditional().accept(this, env);
-    if (!(result instanceof Value.BoolVal))
-      return new Value.DynamicError("Condition not a boolean in expression " + ts.visit(e, env));
-    Value.BoolVal condition = (Value.BoolVal) result; // Dynamic checking
+    if (!(result instanceof BoolVal))
+      return new DynamicError("Condition not a boolean in expression " + ts.visit(e, env));
+    BoolVal condition = (BoolVal) result; // Dynamic checking
 
     if (condition.v())
       return (Value) e.then_exp().accept(this, env);
@@ -176,34 +199,34 @@ public class Evaluator implements Visitor<Value> {
 
   @Override
   public Value visit(LessExp e, Env env) { // New for funclang.
-    Value.NumVal first = (Value.NumVal) e.first_exp().accept(this, env);
-    Value.NumVal second = (Value.NumVal) e.second_exp().accept(this, env);
-    return new Value.BoolVal(first.v() < second.v());
+    NumVal first = (NumVal) e.first_exp().accept(this, env);
+    NumVal second = (NumVal) e.second_exp().accept(this, env);
+    return new BoolVal(first.v() < second.v());
   }
 
   @Override
   public Value visit(EqualExp e, Env env) { // New for funclang.
-    Value.NumVal first = (Value.NumVal) e.first_exp().accept(this, env);
-    Value.NumVal second = (Value.NumVal) e.second_exp().accept(this, env);
-    return new Value.BoolVal(first.v() == second.v());
+    NumVal first = (NumVal) e.first_exp().accept(this, env);
+    NumVal second = (NumVal) e.second_exp().accept(this, env);
+    return new BoolVal(first.v() == second.v());
   }
 
   @Override
   public Value visit(GreaterExp e, Env env) { // New for funclang.
-    Value.NumVal first = (Value.NumVal) e.first_exp().accept(this, env);
-    Value.NumVal second = (Value.NumVal) e.second_exp().accept(this, env);
-    return new Value.BoolVal(first.v() > second.v());
+    NumVal first = (NumVal) e.first_exp().accept(this, env);
+    NumVal second = (NumVal) e.second_exp().accept(this, env);
+    return new BoolVal(first.v() > second.v());
   }
 
   @Override
   public Value visit(CarExp e, Env env) {
-    Value.PairVal pair = (Value.PairVal) e.arg().accept(this, env);
+    PairVal pair = (PairVal) e.arg().accept(this, env);
     return pair.fst();
   }
 
   @Override
   public Value visit(CdrExp e, Env env) {
-    Value.PairVal pair = (Value.PairVal) e.arg().accept(this, env);
+    PairVal pair = (PairVal) e.arg().accept(this, env);
     return pair.snd();
   }
 
@@ -211,7 +234,7 @@ public class Evaluator implements Visitor<Value> {
   public Value visit(ConsExp e, Env env) {
     Value first = (Value) e.fst().accept(this, env);
     Value second = (Value) e.snd().accept(this, env);
-    return new Value.PairVal(first, second);
+    return new PairVal(first, second);
   }
 
   @Override
@@ -219,14 +242,14 @@ public class Evaluator implements Visitor<Value> {
     List<Exp> elemExps = e.elems();
     int length = elemExps.size();
     if (length == 0)
-      return new Value.Null();
+      return new Null();
 
     // Order of evaluation: left to right e.g. (list (+ 3 4) (+ 5 4))
     Value[] elems = new Value[length];
     for (int i = 0; i < length; i++)
       elems[i] = (Value) elemExps.get(i).accept(this, env);
 
-    Value result = new Value.Null();
+    Value result = new Null();
     for (int i = length - 1; i >= 0; i--)
       result = new PairVal(elems[i], result);
     return result;
@@ -235,7 +258,7 @@ public class Evaluator implements Visitor<Value> {
   @Override
   public Value visit(NullExp e, Env env) {
     Value val = (Value) e.arg().accept(this, env);
-    return new BoolVal(val instanceof Value.Null);
+    return new BoolVal(val instanceof Null);
   }
 
   @Override
@@ -273,8 +296,8 @@ public class Evaluator implements Visitor<Value> {
      */
     List<String> formals = new ArrayList<>();
     formals.add("file");
-    Exp body = new AST.ReadExp(new VarExp("file"));
-    Value.FunVal readFun = new Value.FunVal(initEnv, formals, body);
+    Exp body = new ReadExp(new VarExp("file"));
+    FunVal readFun = new FunVal(initEnv, formals, body);
     initEnv.extend("read", readFun);
 
     /*
@@ -283,15 +306,15 @@ public class Evaluator implements Visitor<Value> {
      */
     formals = new ArrayList<>();
     formals.add("file");
-    body = new EvalExp(new AST.ReadExp(new VarExp("file")));
-    Value.FunVal requireFun = new Value.FunVal(initEnv, formals, body);
+    body = new EvalExp(new ReadExp(new VarExp("file")));
+    FunVal requireFun = new FunVal(initEnv, formals, body);
     initEnv.extend("require", requireFun);
 
     /* Add new built-in procedures here */
     formals = new ArrayList<>();
     formals.add("str");
-    body = new AST.LengthStrExp(new VarExp("str"));
-    Value.FunVal lengthFun = new Value.FunVal(initEnv, formals, body);
+    body = new LengthStrExp(new VarExp("str"));
+    FunVal lengthFun = new FunVal(initEnv, formals, body);
     initEnv.extend("length", lengthFun);
 
     return initEnv;

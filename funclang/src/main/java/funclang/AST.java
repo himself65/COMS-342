@@ -202,6 +202,50 @@ public interface AST {
     }
   }
 
+  public static class ConjExp extends CompoundArithExp {
+    public ConjExp(Exp fst) {
+      super(fst);
+    }
+
+    public ConjExp(List<Exp> args) {
+      super(args);
+    }
+
+    public ConjExp(Exp fst, List<Exp> rest) {
+      super(fst, rest);
+    }
+
+    public ConjExp(Exp left, Exp right) {
+      super(left, right);
+    }
+
+    public <T> T accept(Visitor<T> visitor, Env env) {
+      return visitor.visit(this, env);
+    }
+  }
+
+  public static class DisjExp extends CompoundArithExp {
+    public DisjExp(Exp fst) {
+      super(fst);
+    }
+
+    public DisjExp(List<Exp> args) {
+      super(args);
+    }
+
+    public DisjExp(Exp fst, List<Exp> rest) {
+      super(fst, rest);
+    }
+
+    public DisjExp(Exp left, Exp right) {
+      super(left, right);
+    }
+
+    public <T> T accept(Visitor<T> visitor, Env env) {
+      return visitor.visit(this, env);
+    }
+  }
+
   public static class SubExp extends CompoundArithExp {
 
     public SubExp(Exp fst) {
@@ -673,56 +717,59 @@ public interface AST {
 
   public interface Visitor<T> {
     // This interface should contain a signature for each concrete AST node.
-    public T visit(AST.AddExp e, Env env);
+    public T visit(AddExp e, Env env);
 
-    public T visit(AST.UnitExp e, Env env);
+    public T visit(UnitExp e, Env env);
 
-    public T visit(AST.NumExp e, Env env);
+    public T visit(NumExp e, Env env);
 
-    public T visit(AST.StrExp e, Env env);
+    public T visit(StrExp e, Env env);
 
-    public T visit(AST.BoolExp e, Env env);
+    public T visit(BoolExp e, Env env);
 
-    public T visit(AST.DivExp e, Env env);
+    public T visit(DivExp e, Env env);
 
-    public T visit(AST.MultExp e, Env env);
+    public T visit(MultExp e, Env env);
 
-    public T visit(AST.Program p, Env env);
+    public T visit(Program p, Env env);
 
-    public T visit(AST.SubExp e, Env env);
+    public T visit(SubExp e, Env env);
 
-    public T visit(AST.VarExp e, Env env);
+    public T visit(VarExp e, Env env);
 
-    public T visit(AST.LetExp e, Env env); // New for the varlang
+    public T visit(LetExp e, Env env); // New for the varlang
 
-    public T visit(AST.DefineDecl d, Env env); // New for the definelang
+    public T visit(DefineDecl d, Env env); // New for the definelang
 
-    public T visit(AST.ReadExp e, Env env); // New for the funclang
+    public T visit(ReadExp e, Env env); // New for the funclang
 
-    public T visit(AST.EvalExp e, Env env); // New for the funclang
+    public T visit(EvalExp e, Env env); // New for the funclang
 
-    public T visit(AST.LambdaExp e, Env env); // New for the funclang
+    public T visit(LambdaExp e, Env env); // New for the funclang
 
-    public T visit(AST.CallExp e, Env env); // New for the funclang
+    public T visit(CallExp e, Env env); // New for the funclang
 
-    public T visit(AST.IfExp e, Env env); // Additional expressions for convenience
+    public T visit(IfExp e, Env env); // Additional expressions for convenience
 
-    public T visit(AST.LessExp e, Env env); // Additional expressions for convenience
+    public T visit(LessExp e, Env env); // Additional expressions for convenience
 
-    public T visit(AST.EqualExp e, Env env); // Additional expressions for convenience
+    public T visit(EqualExp e, Env env); // Additional expressions for convenience
 
-    public T visit(AST.GreaterExp e, Env env); // Additional expressions for convenience
+    public T visit(GreaterExp e, Env env); // Additional expressions for convenience
 
-    public T visit(AST.CarExp e, Env env); // Additional expressions for convenience
+    public T visit(CarExp e, Env env); // Additional expressions for convenience
 
-    public T visit(AST.CdrExp e, Env env); // Additional expressions for convenience
+    public T visit(CdrExp e, Env env); // Additional expressions for convenience
 
-    public T visit(AST.ConsExp e, Env env); // Additional expressions for convenience
+    public T visit(ConsExp e, Env env); // Additional expressions for convenience
 
-    public T visit(AST.ListExp e, Env env); // Additional expressions for convenience
+    public T visit(ListExp e, Env env); // Additional expressions for convenience
 
-    public T visit(AST.NullExp e, Env env); // Additional expressions for convenience
+    public T visit(NullExp e, Env env); // Additional expressions for convenience
 
-    public T visit(AST.LengthStrExp e, Env env); // Additional expressions for convenience
+    public T visit(LengthStrExp e, Env env); // Additional expressions for convenience
+
+    public T visit(ConjExp e, Env env);
+    public T visit(DisjExp e, Env env);
   }
 }

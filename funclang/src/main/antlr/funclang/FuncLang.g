@@ -35,6 +35,8 @@ grammar FuncLang;
         | cons=consexp { $ast = $cons.ast; }
         | list=listexp { $ast = $list.ast; }
         | nl=nullexp { $ast = $nl.ast; }
+        | conj=conjexp { $ast = $conj.ast; }
+        | disj=disjexp { $ast = $disj.ast; }
         ;
 
  // New Expressions for FuncLang
@@ -184,6 +186,24 @@ grammar FuncLang;
       '(' ( '(' id=Identifier e=exp ')' { $names.add($id.text); $value_exps.add($e.ast); } )+  ')'
       body=exp
       ')' { $ast = new LetExp($names, $value_exps, $body.ast); }
+    ;
+
+ conjexp returns [ConjExp ast]
+        locals [ArrayList<Exp> list]
+    @init { $list = new ArrayList<Exp>(); } :
+    '(' '&&'
+        e=exp { $list.add($e.ast); }
+        ( e=exp { $list.add($e.ast); } )+
+    ')' { $ast = new ConjExp($list); }
+    ;
+
+  disjexp returns [DisjExp ast]
+         locals [ArrayList<Exp> list]
+    @init { $list = new ArrayList<Exp>(); } :
+    '(' '||'
+        e=exp { $list.add($e.ast); }
+        ( e=exp { $list.add($e.ast); } )+
+    ')' { $ast = new DisjExp($list); }
     ;
 
  // Lexical Specification of this Programming Language

@@ -1,8 +1,8 @@
 package funclang;
 
-import java.util.List;
-
 import funclang.AST.Exp;
+
+import java.util.List;
 
 public interface Value {
   public String tostring();
@@ -78,7 +78,7 @@ public interface Value {
   }
 
   static class StringVal implements Value {
-    private java.lang.String _val;
+    private String _val;
 
     public StringVal(String v) {
       _val = v;
@@ -88,7 +88,7 @@ public interface Value {
       return _val;
     }
 
-    public java.lang.String tostring() {
+    public String tostring() {
       return "" + _val;
     }
   }
@@ -110,26 +110,26 @@ public interface Value {
       return _snd;
     }
 
-    public java.lang.String tostring() {
+    public String tostring() {
       if (isList())
         return listToString();
       return "(" + _fst.tostring() + " " + _snd.tostring() + ")";
     }
 
     private boolean isList() {
-      if (_snd instanceof Value.Null)
+      if (_snd instanceof Null)
         return true;
-      if (_snd instanceof Value.PairVal &&
-          ((Value.PairVal) _snd).isList())
+      if (_snd instanceof PairVal &&
+          ((PairVal) _snd).isList())
         return true;
       return false;
     }
 
-    private java.lang.String listToString() {
+    private String listToString() {
       String result = "(";
       result += _fst.tostring();
       Value next = _snd;
-      while (!(next instanceof Value.Null)) {
+      while (!(next instanceof Null)) {
         result += " " + ((PairVal) next)._fst.tostring();
         next = ((PairVal) next)._snd;
       }
