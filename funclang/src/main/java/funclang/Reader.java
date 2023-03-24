@@ -1,14 +1,10 @@
 package funclang;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.FileReader;
-
 import funclang.AST.Program;
 import funclang.parser.FuncLangLexer;
 import funclang.parser.FuncLangParser;
+
+import java.io.*;
 
 public class Reader {
 

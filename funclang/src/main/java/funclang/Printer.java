@@ -1,8 +1,8 @@
 package funclang;
 
-import java.util.List;
-
 import funclang.AST.Exp;
+
+import java.util.List;
 
 public class Printer {
   public void print(Value v) {
@@ -18,7 +18,21 @@ public class Printer {
 
     public String visit(AST.AddExp e, Env env) {
       String result = "(+ ";
-      for (AST.Exp exp : e.all())
+      for (Exp exp : e.all())
+        result += exp.accept(this, env) + " ";
+      return result + ")";
+    }
+
+    public String visit(AST.ConjExp e, Env env) {
+      String result = "(&& ";
+      for (Exp exp : e.all())
+        result += exp.accept(this, env) + " ";
+      return result + ")";
+    }
+
+    public String visit(AST.DisjExp e, Env env) {
+      String result = "(|| ";
+      for (Exp exp : e.all())
         result += exp.accept(this, env) + " ";
       return result + ")";
     }
@@ -43,7 +57,7 @@ public class Printer {
 
     public String visit(AST.DivExp e, Env env) {
       String result = "(/ ";
-      for (AST.Exp exp : e.all())
+      for (Exp exp : e.all())
         result += exp.accept(this, env) + " ";
       return result + ")";
     }
@@ -58,7 +72,7 @@ public class Printer {
 
     public String visit(AST.MultExp e, Env env) {
       String result = "(* ";
-      for (AST.Exp exp : e.all())
+      for (Exp exp : e.all())
         result += exp.accept(this, env) + " ";
       return result + ")";
     }
@@ -69,7 +83,7 @@ public class Printer {
 
     public String visit(AST.SubExp e, Env env) {
       String result = "(- ";
-      for (AST.Exp exp : e.all())
+      for (Exp exp : e.all())
         result += exp.accept(this, env) + " ";
       return result + ")";
     }
@@ -112,7 +126,7 @@ public class Printer {
     public String visit(AST.CallExp e, Env env) {
       String result = "(";
       result += e.operator().accept(this, env) + " ";
-      for (AST.Exp exp : e.operands())
+      for (Exp exp : e.operands())
         result += exp.accept(this, env) + " ";
       return result + ")";
     }
@@ -174,7 +188,7 @@ public class Printer {
 
     public String visit(AST.ListExp e, Env env) {
       String result = "(list ";
-      for (AST.Exp exp : e.elems())
+      for (Exp exp : e.elems())
         result += exp.accept(this, env) + " ";
       return result + ")";
     }
