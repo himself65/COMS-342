@@ -1,0 +1,33 @@
+(define append (lambda (lst1 lst2) (if (null? lst1) lst2 (if (null? lst2) lst1 (cons (car lst1) (append (cdr lst1) lst2))))))
+(define flatten (lambda (lst)
+                  (if (null? lst)
+                    (list)
+                    (append (car lst) (flatten (cdr lst))))))
+(define maxv (lambda (lst)
+               (if (null? (cdr lst))
+                 (car lst)
+                 (if (> (car lst) (maxv (cdr lst)))
+                   (car lst)
+                   (maxv (cdr lst))))))
+(define splice (lambda (lst n)
+                 (if (null? lst)
+                   (list)
+                   (if (= n 0)
+                     (cdr lst)
+                     (cons (car lst) (splice (cdr lst) (- n 1)))))))
+(define find (lambda (lst n)
+               (if (null? lst)
+                 -1
+                 (if (= (car lst) n)
+                   0
+                   (+ 1 (find (cdr lst) n))))))
+
+(define sort (lambda (lst)
+               (if (null? lst)
+                 (list)
+                 (cons (maxv lst) (sort (splice lst (find lst (maxv lst)))))
+                 )))
+
+(define con-sort (lambda (lst) (sort (flatten lst))))
+
+(con-sort (list))

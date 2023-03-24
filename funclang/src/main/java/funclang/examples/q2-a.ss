@@ -1,0 +1,10 @@
+(define freq_list (lambda (l x) (if (null? l) 0 (if (= (car l) x) (+ 1 (freq_list (cdr l) x)) (freq_list (cdr l) x)))))
+(define append (lambda (lst1 lst2) (if (null? lst1) lst2 (if (null? lst2) lst1 (cons (car lst1) (append (cdr lst1) lst2))))))
+(define freq (lambda (x lst) (if (null? lst)
+                               (list)
+                               (
+                                 if (null? (cdr lst))
+                                 (list (freq_list (car lst) x))
+                                 (append (list (freq_list (car lst) x)) (freq x (cdr lst)))
+                                 )
+                               )))
