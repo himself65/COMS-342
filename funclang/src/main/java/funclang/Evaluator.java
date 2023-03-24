@@ -188,6 +188,43 @@ public class Evaluator implements Visitor<Value> {
     return new Value.BoolVal(first.v() == second.v());
   }
 
+  // String, Boolean, Number
+  static boolean isSame(Value a, Value b) {
+    if (a instanceof StringVal && b instanceof StringVal) {
+      return ((StringVal) a).v().equals(((StringVal) b).v());
+    } else if (a instanceof BoolVal && b instanceof BoolVal) {
+      return ((BoolVal) a).v() == ((BoolVal) b).v();
+    } else if (a instanceof NumVal && b instanceof NumVal) {
+      return ((NumVal) a).v() == ((NumVal) b).v();
+    } else if (a instanceof UnitVal && b instanceof UnitVal) {
+      return true;
+    } else if (a instanceof DynamicError && b instanceof DynamicError) {
+      return true;
+    } else if (a instanceof PairVal && b instanceof PairVal) {
+      if (((PairVal) a).fst() instanceof StringVal && ((PairVal) b).fst() instanceof StringVal) {
+        return ((StringVal) ((PairVal) a).fst()).v().equals(((StringVal) ((PairVal) b).fst()).v()) && isSame(((PairVal) a).snd(), ((PairVal) b).snd());
+      } else if (((PairVal) a).fst() instanceof BoolVal && ((PairVal) b).fst() instanceof BoolVal) {
+        return ((BoolVal) ((PairVal) a).fst()).v() == ((BoolVal) ((PairVal) b).fst()).v() && isSame(((PairVal) a).snd(), ((PairVal) b).snd());
+      } else if (((PairVal) a).fst() instanceof NumVal && ((PairVal) b).fst() instanceof NumVal) {
+        return ((NumVal) ((PairVal) a).fst()).v() == ((NumVal) ((PairVal) b).fst()).v() && isSame(((PairVal) a).snd(), ((PairVal) b).snd());
+      } else if (((PairVal) a).fst() instanceof PairVal && ((PairVal) b).fst() instanceof PairVal) {
+        return isSame(((PairVal) a).fst(), ((PairVal) b).fst()) && isSame(((PairVal) a).snd(), ((PairVal) b).snd());
+      } else {
+        return false;
+      }
+    } else {
+      return a instanceof Null && b instanceof Null;
+    }
+  }
+
+  @Override
+  public Value visit(EqualQExp e, Env env) {
+    Value first = (Value) e.first_exp().accept(this, env);
+    Value second = (Value) e.second_exp().accept(this, env);
+    boolean same = isSame(first, second);
+    return new Value.BoolVal(same);
+  }
+
   @Override
   public Value visit(GreaterExp e, Env env) { // New for funclang.
     Value.NumVal first = (Value.NumVal) e.first_exp().accept(this, env);

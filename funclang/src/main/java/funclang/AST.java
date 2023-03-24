@@ -483,6 +483,16 @@ public interface AST {
     }
   }
 
+  public static class EqualQExp extends BinaryComparator {
+    public EqualQExp(Exp first_exp, Exp second_exp) {
+      super(first_exp, second_exp);
+    }
+
+    public <T> T accept(Visitor<T> visitor, Env env) {
+      return visitor.visit(this, env);
+    }
+  }
+
   /**
    * A greater expression has the syntax
    *
@@ -710,6 +720,7 @@ public interface AST {
     public T visit(AST.LessExp e, Env env); // Additional expressions for convenience
 
     public T visit(AST.EqualExp e, Env env); // Additional expressions for convenience
+    public T visit(AST.EqualQExp e, Env env); // Additional expressions for convenience
 
     public T visit(AST.GreaterExp e, Env env); // Additional expressions for convenience
 

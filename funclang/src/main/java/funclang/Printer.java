@@ -139,6 +139,13 @@ public class Printer {
       return result + ")";
     }
 
+    public String visit(AST.EqualQExp e, Env env) {
+      String result = "(equal? ";
+      result += e.first_exp().accept(this, env) + " ";
+      result += e.second_exp().accept(this, env);
+      return result + ")";
+    }
+
     public String visit(AST.GreaterExp e, Env env) {
       String result = "(> ";
       result += e.first_exp().accept(this, env) + " ";

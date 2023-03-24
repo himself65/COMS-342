@@ -35,6 +35,7 @@ grammar FuncLang;
         | cons=consexp { $ast = $cons.ast; }
         | list=listexp { $ast = $list.ast; }
         | nl=nullexp { $ast = $nl.ast; }
+        | eqq=equalqexp { $ast = $eqq.ast; }
         ;
 
  // New Expressions for FuncLang
@@ -186,6 +187,13 @@ grammar FuncLang;
       ')' { $ast = new LetExp($names, $value_exps, $body.ast); }
     ;
 
+ equalqexp returns [EqualQExp ast] :
+    '(' EqualQ
+        e1=exp
+      e2=exp
+    ')' { $ast = new EqualQExp($e1.ast,$e2.ast); }
+    ;
+
  // Lexical Specification of this Programming Language
  //  - lexical specification rules start with uppercase
 
@@ -199,6 +207,7 @@ grammar FuncLang;
  Cons : 'cons' ;
  List : 'list' ;
  Null : 'null?' ;
+ EqualQ : 'equal?' ;
  Less : '<' ;
  Equal : '=' ;
  Greater : '>' ;
