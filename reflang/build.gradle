@@ -1,0 +1,13 @@
+task runInterpreter(type: JavaExec) {
+  classpath sourceSets.main.runtimeClasspath
+}
+
+run {
+   standardInput = System.in
+}
+
+mainClassName="reflang.Interpreter"
+
+generateGrammarSource {
+    arguments += ["-no-listener", "-package", "reflang.parser; import static reflang.AST.*"]
+}
