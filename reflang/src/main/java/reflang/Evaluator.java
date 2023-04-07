@@ -111,8 +111,18 @@ public class Evaluator implements Visitor<Value> {
     List<Exp> value_exps = e.value_exps();
     List<Value> values = new ArrayList<Value>(value_exps.size());
 
-    for (Exp exp : value_exps)
-      values.add((Value) exp.accept(this, env));
+    for (Exp exp : value_exps) {
+      Value val = (Value) exp.accept(this, env);
+      values.add(val);
+
+      // Example:
+      //  Alias created:: Name - > class ref value - > loc:0
+      if (exp instanceof RefExp) {
+        System.out.println("Alias created:: Name - > " + names.get(0) + " class ref value -> loc:" + ((RefVal) val).loc());
+      } else if (exp instanceof VarExp) {
+        System.out.println("Alias created:: Name - > " + names.get(0) + " class ref value -> loc:" + ((RefVal) env.get(((VarExp) exp).name())).loc());
+      }
+    }
 
     Env new_env = env;
     for (int index = 0; index < names.size(); index++)
@@ -126,6 +136,9 @@ public class Evaluator implements Visitor<Value> {
     String name = e.name();
     Exp value_exp = e.value_exp();
     Value value = (Value) value_exp.accept(this, env);
+    if (value instanceof RefVal) {
+      System.out.println("Alias created:: Name - > " + name + " ref value -> loc:" + ((RefVal) value).loc());
+    }
     ((GlobalEnv) initEnv).extend(name, value);
     return new Value.UnitVal();
   }
