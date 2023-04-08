@@ -113,9 +113,13 @@ public interface Env {
     }
 
     public synchronized Value get(String search_var) {
-      if (map.containsKey(search_var))
+      if (this.has(search_var))
         return map.get(search_var);
       throw new LookupException("No binding found for name: " + search_var);
+    }
+
+    public synchronized boolean has(String var) {
+      return map.containsKey(var);
     }
 
     public synchronized void extend(String var, Value val) {

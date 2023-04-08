@@ -21,12 +21,20 @@ public interface Heap {
 
     Value[] _rep = new Value[HEAP_SIZE];
     int index = 0;
+    int last = 0;
 
     public Value ref(Value value) {
       if (index >= HEAP_SIZE)
         return new Value.DynamicError("Out of memory error");
+      while (_rep[index] != null)
+        if (++index >= HEAP_SIZE)
+          return new Value.DynamicError("Out of memory error");
       Value.RefVal new_loc = new Value.RefVal(index);
+      if (index != last) {
+        System.out.println("Info: Used Recovered Memory");
+      }
       _rep[index++] = value;
+      last = index;
       return new_loc;
     }
 
@@ -52,6 +60,7 @@ public interface Heap {
 
     public Value free(Value.RefVal loc) {
       try {
+        index = loc.loc();
         _rep[loc.loc()] = null;
         return loc;
       } catch (ArrayIndexOutOfBoundsException e) {

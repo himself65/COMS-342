@@ -126,6 +126,10 @@ public class Evaluator implements Visitor<Value> {
     String name = e.name();
     Exp value_exp = e.value_exp();
     Value value = (Value) value_exp.accept(this, env);
+    if (((GlobalEnv) initEnv).has(name) && (((GlobalEnv) initEnv).get(name) instanceof RefVal)) {
+      System.out.println("Info: Memory Leak Detected");
+      heap.free(((RefVal) ((GlobalEnv) initEnv).get(name)));
+    }
     ((GlobalEnv) initEnv).extend(name, value);
     return new Value.UnitVal();
   }
