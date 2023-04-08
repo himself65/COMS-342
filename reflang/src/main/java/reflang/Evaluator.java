@@ -26,9 +26,21 @@ public class Evaluator implements Visitor<Value> {
   public Value visit(AddExp e, Env env) {
     List<Exp> operands = e.all();
     double result = 0;
+    RefVal refVal = null;
     for (Exp exp : operands) {
+      if (exp instanceof VarExp) {
+        Value value = initEnv.get(((VarExp) exp).name());
+        if (value instanceof RefVal) {
+          refVal = (RefVal) value;
+          continue;
+        }
+      }
       NumVal intermediate = (NumVal) exp.accept(this, env); // Dynamic type-checking
       result += intermediate.v(); // Semantics of AddExp in terms of the target language.
+    }
+    if (refVal != null) {
+      int loc = refVal.loc() + (int) result;
+      return new RefVal(loc);
     }
     return new NumVal(result);
   }
@@ -90,11 +102,30 @@ public class Evaluator implements Visitor<Value> {
   @Override
   public Value visit(SubExp e, Env env) {
     List<Exp> operands = e.all();
-    NumVal lVal = (NumVal) operands.get(0).accept(this, env);
-    double result = lVal.v();
+    Value lVal = operands.get(0).accept(this, env);
+    double result = 0;
+    RefVal refVal = null;
+    if (lVal instanceof RefVal) {
+      int loc = ((RefVal) lVal).loc();
+      refVal = (RefVal) lVal;
+    } else {
+      result = ((NumVal) lVal).v();
+    }
     for (int i = 1; i < operands.size(); i++) {
+      Exp exp = operands.get(i);
+      if (exp instanceof VarExp) {
+        Value value = initEnv.get(((VarExp) exp).name());
+        if (value instanceof RefVal) {
+          refVal = (RefVal) value;
+          continue;
+        }
+      }
       NumVal rVal = (NumVal) operands.get(i).accept(this, env);
       result = result - rVal.v();
+    }
+    if (refVal != null) {
+      int loc = refVal.loc() + (int) result;
+      return new RefVal(loc);
     }
     return new NumVal(result);
   }
@@ -309,6 +340,10 @@ public class Evaluator implements Visitor<Value> {
   @Override
   public Value visit(DerefExp e, Env env) { // New for reflang.
     Exp loc_exp = e.loc_exp();
+    if (loc_exp instanceof NumExp) {
+      NumVal val = (NumVal) loc_exp.accept(this, env);
+      return heap.getRef((int) val.v());
+    }
     Value.RefVal loc = (Value.RefVal) loc_exp.accept(this, env);
     return heap.deref(loc);
   }
@@ -319,6 +354,10 @@ public class Evaluator implements Visitor<Value> {
     Exp lhs = e.lhs_exp();
     // Note the order of evaluation below.
     Value rhs_val = (Value) rhs.accept(this, env);
+    if (lhs instanceof NumExp) {
+      NumVal val = (NumVal) lhs.accept(this, env);
+      return heap.setRef((int) val.v(), rhs_val);
+    }
     Value.RefVal loc = (Value.RefVal) lhs.accept(this, env);
     Value assign_val = heap.setref(loc, rhs_val);
     return assign_val;

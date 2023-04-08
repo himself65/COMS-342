@@ -12,6 +12,9 @@ public interface Heap {
 
   Value deref(Value.RefVal loc);
 
+  Value getRef(int loc);
+  Value setRef(int loc, Value value);
+
   Value setref(Value.RefVal loc, Value value);
 
   Value free(Value.RefVal value);
@@ -28,6 +31,14 @@ public interface Heap {
       Value.RefVal new_loc = new Value.RefVal(index);
       _rep[index++] = value;
       return new_loc;
+    }
+
+    public Value getRef(int loc) {
+      return _rep[loc];
+    }
+
+    public Value setRef(int loc, Value value) {
+      return _rep[loc] = value;
     }
 
     public Value deref(Value.RefVal loc) {
