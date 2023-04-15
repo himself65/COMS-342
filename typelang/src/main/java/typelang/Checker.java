@@ -302,6 +302,10 @@ public class Checker implements Visitor<Type, Env<Type>> {
       return ((RefT) type).nestType();
     }
 
+    if (e.type().typeEqual(type)) {
+      return new RefT(type);
+    }
+
     return new ErrorT("The reference expression expect a reference type " +
         e.type().tostring() + " "
         + "found " + type.tostring() + " in " + ts.visit(e, null));
