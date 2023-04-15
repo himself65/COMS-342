@@ -262,8 +262,18 @@ public class Checker implements Visitor<Type, Env<Type>> {
   }
 
   public Type visit(RefExp e, Env<Type> env) {
+    Exp exp = e.value_exp();
+    Type type = (Type) exp.accept(this, env);
+    if (type instanceof ErrorT) {
+      return type;
+    }
+    if (type instanceof RefT) {
+      return ((RefT) type).nestType();
+    }
 
-    return new ErrorT("RefExp has not been implemented yet!");
+    return new ErrorT("The reference expression expect a reference type " +
+        e.type().tostring() + " "
+        + "found " + type.tostring() + " in " + ts.visit(e, null));
   }
 
   public Type visit(DerefExp e, Env<Type> env) {
