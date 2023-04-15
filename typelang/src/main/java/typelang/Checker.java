@@ -235,7 +235,7 @@ public class Checker implements Visitor<Type, Env<Type>> {
     }
     if (t instanceof PairT) {
       PairT p = (PairT) t;
-      return p.fst();
+      return p.snd();
     }
     return new ErrorT("The car expect an expression of type Pair, found" + t.tostring() + " in " + ts.visit(e, null));
   }
