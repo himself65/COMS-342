@@ -88,8 +88,25 @@ public class Checker implements Visitor<Type, Env<Type>> {
   }
 
   public Type visit(LambdaExp e, Env<Type> env) {
+    List<String> formals = e.formals();
+    List<Type> types = e.formal_types();
 
-    return new ErrorT("LambdaExp has not been implemented yet!");
+    String message = "The number of formal parameters and the number of "
+        + "arguments in the function type do not match in ";
+
+    if (types.size() == formals.size()) {
+      Env<Type> new_env = env;
+      int index = 0;
+      for (Type argType : types) {
+        new_env = new ExtendEnv<Type>(new_env, formals.get(index),
+            argType);
+        index++;
+      }
+
+      Type bodyType = (Type) e.body().accept(this, new_env);
+      return new FuncT(types, bodyType);
+    }
+    return new ErrorT(message + ts.visit(e, null));
   }
 
   public Type visit(CallExp e, Env<Type> env) {
