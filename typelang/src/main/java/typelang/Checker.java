@@ -400,8 +400,30 @@ public class Checker implements Visitor<Type, Env<Type>> {
 
   private Type visitBinaryComparator(BinaryComparator e, Env<Type> env,
       String printNode) {
+    Exp first = e.first_exp();
+    Exp second = e.second_exp();
 
-    return new ErrorT("BinaryComparator has not been implemented yet!");
+    Type first_t = (Type) first.accept(this, env);
+    if (first_t instanceof ErrorT) {
+      return first_t;
+    }
+
+    Type second_t = (Type) second.accept(this, env);
+    if (second_t instanceof ErrorT) {
+      return second_t;
+    }
+
+    if (first_t instanceof ListT && second_t instanceof ListT) {
+      return first_t.typeEqual(second_t) ? BoolT.getInstance() : new ErrorT(
+          "The two lists should have the same type " + printNode);
+    }
+
+    if (first_t instanceof NumT && second_t instanceof NumT) {
+      return BoolT.getInstance();
+    }
+
+    return new ErrorT("The two expressions should have the same type "
+        + printNode);
   }
 
   public Type visit(AddExp e, Env<Type> env) {
