@@ -215,13 +215,29 @@ public class Checker implements Visitor<Type, Env<Type>> {
   }
 
   public Type visit(CarExp e, Env<Type> env) {
-
-    return new ErrorT("CarExp has not been implemented yet!");
+    Exp exp = e.arg();
+    Type t = (Type) exp.accept(this, env);
+    if (t instanceof ErrorT) {
+      return t;
+    }
+    if (t instanceof PairT) {
+      PairT p = (PairT) t;
+      return p.fst();
+    }
+    return new ErrorT("The car expect an expression of type Pair, found" + t.tostring() + " in " + ts.visit(e, null));
   }
 
   public Type visit(CdrExp e, Env<Type> env) {
-
-    return new ErrorT("CdrExp has not been implemented yet!");
+    Exp exp = e.arg();
+    Type t = (Type) exp.accept(this, env);
+    if (t instanceof ErrorT) {
+      return t;
+    }
+    if (t instanceof PairT) {
+      PairT p = (PairT) t;
+      return p.fst();
+    }
+    return new ErrorT("The car expect an expression of type Pair, found" + t.tostring() + " in " + ts.visit(e, null));
   }
 
   public Type visit(ConsExp e, Env<Type> env) {
@@ -243,7 +259,22 @@ public class Checker implements Visitor<Type, Env<Type>> {
 
   public Type visit(ListExp e, Env<Type> env) {
 
-    return new ErrorT("ListExp has not been implemented yet!");
+    List<Exp> ele = e.elems();
+    Type t = e.type();
+
+    int index = 0;
+    for(Exp elem : ele) {
+      Type et = (Type) elem.accept(this, env);
+      if (et instanceof ErrorT) {
+        return et;
+      }
+      if (!assignable(t, et)) {
+        return new ErrorT("The " + index + " Expression should have type " + t.tostring() + " found " + et.tostring() + " in " + ts.visit(e, null));
+      }
+      index++;
+    }
+
+    return new ListT(t);
   }
 
   public Type visit(NullExp e, Env<Type> env) {
